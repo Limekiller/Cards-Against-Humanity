@@ -13,10 +13,7 @@ import os
 import random
 
 # TODO: Make it print out the question and winning answer at the end of a round, or sentence with filled in blanks
-# TODO: Improve multiple blank support; instead of removing from the hand immediately when a card is played, instead
-# TODO: replace the card with a placeholder, and then remove all placeholders at the end. This will keep choices
-# TODO: 1-1 with the "your hand" printout. Also, make it so they can't play a placeholder after it's created :P
-# TODO: Improve card output: make more user-friendly than printing out literal list
+# TODO: Make output more friendly
 # TODO: Allow anyone to join at any time
 
 # THE GAME WORKS
@@ -136,18 +133,19 @@ class ServerThread(threading.Thread):
             # If receiving a card, save it in the 'sent' variable
             if data.decode('utf8')[-4:] == 'card':
                 # Make sure the card is in the hand
-                if data.decode('utf8')[:-4] in '01234':
+                if data.decode('utf8')[:-4] in '01234' and self.hand[int(data.decode('utf8')[:-4])] != 'trash':
                     self.sent.append(self.hand[int(data.decode('utf8')[:-4])])
                     # Remove card from hand
-                    self.hand.remove(self.hand[int(data.decode('utf8')[:-4])])
+                    # self.hand.remove(self.hand[int(data.decode('utf8')[:-4])])
+                    self.hand[int(data.decode('utf8')[:-4])] = 'trash'
                     if len(self.sent) == find_blanks(q_card):
-                        print(self.name+' has played their card!')
+                        print(self.name + ' has played their card!')
                         self.consock.sendall('T'.encode('utf8'))
                         # Only notify people that have already played their cards that somebody else has played a card.
                         # Otherwise things get messed up yo
                         for i in threads.keys():
                             if threads[i].sent:
-                                threads[i].send((self.name+' has played their card!').encode('utf8'))
+                                threads[i].send((self.name + ' has played their card!').encode('utf8'))
                     else:
                         self.consock.sendall('M'.encode('utf8'))
                 # Only accept cards in the hand
@@ -156,9 +154,9 @@ class ServerThread(threading.Thread):
 
             # If receiving a judge's decision, make sure that the chosen card has actually been played
             if data.decode('utf8')[-5:] == 'judge':
-                if (data.decode('utf8')[:-5]) in [str(i+1) for i in range(len(randomize_cards))]:
+                if (data.decode('utf8')[:-5]) in [str(i + 1) for i in range(len(randomize_cards))]:
                     # Get the actual data on the card (not just the integer value in the cards played list)
-                    judge_choice = randomize_cards[int(data.decode('utf8')[:-5])-1]
+                    judge_choice = randomize_cards[int(data.decode('utf8')[:-5]) - 1]
                     # Go through every other players sent cards, and declare them the winner of it was theirs.
                     # If it is none of theirs, it must be the host's; declare the host the winner.
                     client_card = False
@@ -186,7 +184,6 @@ class ServerThread(threading.Thread):
 
 
 class LANSearchThread(threading.Thread):
-
     def __init__(self):
         threading.Thread.__init__(self)
         self.setDaemon(True)
@@ -209,8 +206,8 @@ class LANSearchThread(threading.Thread):
         b = int(self.server_name[2]) + 1
         while not self.quitting and (a > 0 or b < 255):
             # Wait for open socket
-            #rr, rw, err = select.select([self.serversocket], [], [], 1)
-            #if rr:
+            # rr, rw, err = select.select([self.serversocket], [], [], 1)
+            # if rr:
             server_port = 12000
             server_name = gethostbyname(gethostname()).split('.')
 
@@ -240,12 +237,13 @@ class LANSearchThread(threading.Thread):
                 b += 1
             self.shutdown()
 
+
 def search():
     print("Enter 'stop' to stop searching for games.")
     s1 = LANSearchThread()
     s1.start()
     stop = 'f'
-    while stop != 'stop' and s1.quitting == False:
+    while stop != 'stop' and not s1.quitting:
         stop = input("Games found\n")
 
 
@@ -348,10 +346,10 @@ def play_h(active_threads):
     # It removes the final comma and adds an and between the last two names
     #########
 
-    print('\n'*100)
-    print(names+'\n')
+    print('\n' * 100)
+    print(names + '\n')
     send_to_all("T")
-    send_to_all(names+'\n')
+    send_to_all(names + '\n')
 
     # If Windows, open chat like this
     if os.name == 'nt':
@@ -380,7 +378,7 @@ def play_h(active_threads):
 def play_c(clientsocket, ip):
     """Sends name to host, and opens chat for client."""
 
-    print('\n'*100)
+    print('\n' * 100)
     name = 'None'
     # Send nickname to host
     while name == 'None':
@@ -393,7 +391,7 @@ def play_c(clientsocket, ip):
     # Wait for host
     while cont.decode('UTF-8') != "T":
         cont = clientsocket.recv(1024)
-    print('\n'*100)
+    print('\n' * 100)
     # Print all names
     print(clientsocket.recv(1024).decode('utf-8'))
 
@@ -428,10 +426,10 @@ def deal_c(clientsocket, name, hand=[]):
         card = clientsocket.recv(1024).decode('utf-8')
         hand.append(card)
     # Print hand
-    print('\n'*100)
+    print('\n' * 100)
     print("Your hand is:")
     for i in hand:
-        print(hand.index(i)+1, '\t'+i)
+        print(hand.index(i) + 1, '\t' + i)
     return game_c(clientsocket, name, hand)
 
 
@@ -440,6 +438,11 @@ def deal_h(name, hand=[], score=0):
 
     # For each client, send 5 cards
     for i in threads.keys():
+        temp_hand = []
+        for j in range(len(threads[i].hand)):
+            if threads[i].hand[j] != 'trash':
+                temp_hand.append(threads[i].hand[j])
+        threads[i].hand = temp_hand
         # Keep track of cards dealt and choose again if card was already dealt
         while len(threads[i].hand) < 5:
             # If people play a super long game, this might take a while if
@@ -455,7 +458,7 @@ def deal_h(name, hand=[], score=0):
                 # Without this line, the first card received may occasionally be like 200 digits long
                 time.sleep(.2)
 
-    print('\n'*100)
+    print('\n' * 100)
     print('Your hand is: ')
     card = '-1'
     # Deal five cards to self as well
@@ -465,7 +468,7 @@ def deal_h(name, hand=[], score=0):
             dealt.append(card)
             hand.append(card)
     for card in hand:
-        print(hand.index(card)+1, '\t'+card)
+        print(hand.index(card) + 1, '\t' + card)
     return game_h(name, hand, score)
 
 
@@ -475,7 +478,7 @@ def game_c(clientsocket, name, hand):
     print(clientsocket.recv(1024).decode('utf8'))
     # Find who is the judge
     judge = clientsocket.recv(1024).decode('utf8')
-    print(judge+' is the judge!')
+    print(judge + ' is the judge!')
 
     # If its this client, wait for responses
     if judge == name:
@@ -486,15 +489,22 @@ def game_c(clientsocket, name, hand):
         valid = 'F'
         while valid != 'T':
             try:
-                cchoice = int(input("\nWhich card? "))-1
+                cchoice = int(input("\nWhich card? ")) - 1
                 clientsocket.send((str(cchoice) + 'card').encode('utf8'))
                 valid = clientsocket.recv(1024).decode('utf8')
                 if valid == 'M':
-                    hand.remove(hand[int(cchoice)])
+                    # hand.remove(hand[int(cchoice)])
+                    hand[int(cchoice)] = 'trash'
             except:
                 pass
         # Remove played hand from card
-        hand.remove(hand[int(cchoice)])
+        # hand.remove(hand[int(cchoice)])
+        hand[int(cchoice)] = 'trash'
+        temp_hand = []
+        for i in range(len(hand)):
+            if hand[i] != 'trash':
+                temp_hand.append(hand[i])
+        hand = temp_hand
 
     # Continue to print out other players as they play cards
     valid = 'F'
@@ -540,17 +550,16 @@ def game_h(name, hand, score=0):
     host_sent_card = []
     # Choose question card and send to all clients
 
-
     q_card = questions[random.randrange(0, 89)]
-    send_to_all('\n\nQuestion card is: '+str(q_card))
-    print("\nQuestion card is: "+str(q_card))
+    send_to_all('\n\nQuestion card is: ' + str(q_card))
+    print("\nQuestion card is: " + str(q_card))
 
     # Find out who is judge and send to all clients. If nobody is judge, assume host is judge.
     judge = name
     for i in threads.keys():
         if threads[i].judge:
             judge = threads[i].name
-    print(judge+' is the judge!')
+    print(judge + ' is the judge!')
     send_to_all(str(judge))
 
     # If judge, wait for response. Else, take input
@@ -560,30 +569,38 @@ def game_h(name, hand, score=0):
         sent = 0
     else:
         while len(host_sent_card) != find_blanks(q_card):
-            host_sent_card.append(int(input("\nWhich card? ")))
-        print(name+' has played their card!')
+            card_choice = int(input("\nWhich card? "))
+            if hand[card_choice - 1] != 'trash':
+                host_sent_card.append(card_choice)
+        print(name + ' has played their card!')
         # We've seen this before -- tell all users that have already played their card that the host has played theirs.
         for i in threads.keys():
             if threads[i].sent:
                 threads[i].send((name + ' has played their card!').encode('utf8'))
         sent = len(host_sent_card)
-        for i,j in enumerate(host_sent_card):
-            host_sent_card[i] = hand[j-1]
-            hand.remove(hand[j-1])
+
+        for i, j in enumerate(host_sent_card):
+            host_sent_card[i] = hand[j - 1]
+            # hand.remove(hand[j - 1])
+            hand[j - 1] = 'trash'
+        temp_hand = []
+        for i in range(len(hand)):
+            if hand[i] != 'trash':
+                temp_hand.append(hand[i])
+        hand = temp_hand
 
     # Wait for all responses to come in
     if not host_sent_card:
-        while sent <= (len(threads)*find_blanks(q_card))-1:
+        while sent <= (len(threads) * find_blanks(q_card)) - 1:
             sent = 0
             for i in threads.keys():
-                for j in threads[i].sent:
-                    sent += 1
+                sent += len(threads[i].sent)
     else:
-        while sent <= (len(threads)*find_blanks(q_card))-1:
+        while sent <= (len(threads) * find_blanks(q_card)) - 1:
             sent = 1
             for i in threads.keys():
-                for j in threads[i].sent:
-                    sent += 1
+                sent += len(threads[i].sent)
+
     time.sleep(.2)
     send_to_all('T')
 
@@ -601,7 +618,7 @@ def game_h(name, hand, score=0):
     # Create message using shuffled list and send to all clients
     # This way, you can't tell who played what based on the order the cards are printed out.
     for i, n in enumerate(randomize_cards):
-        message += str(i+1)+'\t'+str(n)
+        message += str(i + 1) + '\t' + str(n)
     print(message)
     send_to_all(message)
 
@@ -609,16 +626,16 @@ def game_h(name, hand, score=0):
     if judge == name:
         judge_choice = None
         # Make sure input is valid
-        while judge_choice not in [str(i+1) for i in range(len(randomize_cards))]:
+        while judge_choice not in [str(i + 1) for i in range(len(randomize_cards))]:
             judge_choice = input("Judge, which card do you choose? ")
         judge_choice = int(judge_choice)
         # Find user who played the chosen card
         for i in threads.keys():
-            if threads[i].sent == randomize_cards[judge_choice-1]:#[:-1]:
+            if threads[i].sent == randomize_cards[judge_choice - 1]:
                 winner = threads[i].name
                 threads[i].score += 1
-        print(winner+' has won the round!')
-        send_to_all(winner+' has won the round!')
+        print(winner + ' has won the round!')
+        send_to_all(winner + ' has won the round!')
     # Otherwise, wait for the judge to pick the winner
     else:
         print("Please wait for the judge to pick a card. ")
@@ -633,19 +650,19 @@ def game_h(name, hand, score=0):
             score += 1
         else:
             print(host_card, 'has won the round!')
-            send_to_all(host_card+' has won the round!')
+            send_to_all(host_card + ' has won the round!')
         host_card = False
 
     if score == 5:
-        print(name,'has won the game!')
-        send_to_all(name+' has won the game!')
+        print(name, 'has won the game!')
+        send_to_all(name + ' has won the game!')
         time.sleep(5)
         return
 
     for i in threads.keys():
         if threads[i].score == 5:
-            print(threads[i].name,"has won the game!")
-            send_to_all(threads[i].name+" has won the game!")
+            print(threads[i].name, "has won the game!")
+            send_to_all(threads[i].name + " has won the game!")
             time.sleep(5)
             return
 
@@ -667,7 +684,7 @@ def game_h(name, hand, score=0):
             except:
                 pass
         # If nobody was the judge, make the last person in the list the judge.
-        if n == len(threads.keys())-1 and client_judge is False:
+        if n == len(threads.keys()) - 1 and client_judge is False:
             threads[i].judge = True
         last_ip = i
         threads[i].sent = []
@@ -687,7 +704,7 @@ threads = {}
 while True:
     # Fuck look at that sick-ass ASCII art
     # (Sick-AS-CII art)
-    print('\n'*100)
+    print('\n' * 100)
     print("""                                                                                          
              .:+o+/.                        .//                                                     
            `sNNhyymNy`                      /MN                                                     
@@ -717,16 +734,16 @@ while True:
 """)
     choice = input("\n\nType 'play' to start a game, 'search' to look for open games, or type an IP to connect: ")
     if choice == 'play' or choice == 'Play':  # Open a server if choosing play
-        #try:
-            server()
-        #except:
-         #   pass
+        # try:
+        server()
+        # except:
+        #   pass
     elif choice == 'exit':  # Close program if choosing exit
         exit()
     elif choice == 'search':  # Look for available games if choosing search
         search()
     else:
-        #try:  # Anything else, assume it's an IP and try to connect to it
-            client(choice)
-        #except:  # If co
-         #   pass
+        # try:  # Anything else, assume it's an IP and try to connect to it
+        client(choice)
+        # except:  # If co
+        #   pass
