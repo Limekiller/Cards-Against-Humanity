@@ -529,16 +529,18 @@ def game_c(clientsocket, name, hand):
         print("Please wait for the judge to pick a card. ")
 
     # This prints the winner after receiving who the winner is from the server
-    print(clientsocket.recv(1024).decode('utf8'))
+    message = clientsocket.recv(1024).decode('utf8')
+    print('\n'*100)
+    print(message)
+
 
     win = clientsocket.recv(1024).decode('utf8')
     print('win:', win)
     if win != 'F':
-        print(win)
         time.sleep(5)
         return
 
-    time.sleep(5)
+    time.sleep(9.5)
     return deal_c(clientsocket, name, hand)
 
 
@@ -547,6 +549,7 @@ def game_h(name, hand, score=0):
 
     global q_card
     global host_card
+    winner = ''
     # Clear list of cards that have been played
     del randomize_cards[:]
     # This variable stores the card that the host plays. I'm not sure why I initialized it up here?
@@ -638,8 +641,7 @@ def game_h(name, hand, score=0):
             if threads[i].sent == randomize_cards[judge_choice - 1]:
                 winner = threads[i].name
                 threads[i].score += 1
-        print(winner + ' has won the round!')
-        send_to_all(winner + ' has won the round!')
+        message = winner + ' has won the round!\n\n'+q_card+'\n\n'
     # Otherwise, wait for the judge to pick the winner
     else:
         print("Please wait for the judge to pick a card. ")
@@ -649,13 +651,23 @@ def game_h(name, hand, score=0):
             pass
         # If the card beloged to the host
         if host_card == 'Host':
-            print(name, 'has won the round!')
-            send_to_all(name + ' has won the round!')
+            message = name+' has won the round!\n'
             score += 1
         else:
-            print(host_card, 'has won the round!')
-            send_to_all(host_card + ' has won the round!')
-        host_card = False
+            message = winner+' has won the round!\n'
+        message += '\n'+q_card+'\n\n'+name+':\n'
+        for i in host_sent_card:
+            message += i+'\n'
+    message+='\n'
+    for i in threads.keys():
+        message += threads[i].name+': '
+        for j in threads[i].sent:
+            message += '\n'+j+'\n'
+        message += '\n'
+    print('\n'*100)
+    print(message)
+    send_to_all(message)
+    host_card = False
 
     time.sleep(.5)
 
@@ -674,7 +686,7 @@ def game_h(name, hand, score=0):
 
     send_to_all('F')
     # This isn't so anybody can get caught up, except for slow humans who need to read the output.
-    time.sleep(6)
+    time.sleep(10)
 
     # Reset all necessary variables in all threads for next round
     # Set next person to be the judge (but it works backwards through the list, because .keys() isn't indexable
