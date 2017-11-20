@@ -538,7 +538,7 @@ def game_c(clientsocket, name, hand):
         time.sleep(5)
         return
 
-    time.sleep(6)
+    time.sleep(5)
     return deal_c(clientsocket, name, hand)
 
 
@@ -655,7 +655,7 @@ def game_h(name, hand, score=0):
             print(host_card, 'has won the round!')
             send_to_all(host_card + ' has won the round!')
         host_card = False
-    
+
     time.sleep(.5)
 
     if score == 5:
