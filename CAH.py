@@ -530,12 +530,13 @@ def game_c(clientsocket, name, hand):
 
     # This prints the winner after receiving who the winner is from the server
     print(clientsocket.recv(1024).decode('utf8'))
-    # win = clientsocket.recv(1024).decode('utf8')
-    # print('win:', win)
-    # if win != 'F':
-    #     print(win)
-    #     time.sleep(5)
-    #     return
+
+    win = clientsocket.recv(1024).decode('utf8')
+    print('win:', win)
+    if win != 'F':
+        print(win)
+        time.sleep(5)
+        return
 
     time.sleep(6)
     return deal_c(clientsocket, name, hand)
@@ -655,20 +656,20 @@ def game_h(name, hand, score=0):
             send_to_all(host_card + ' has won the round!')
         host_card = False
 
-    # if score == 5:
-    #     print(name, 'has won the game!')
-    #     send_to_all(name + ' has won the game!')
-    #     time.sleep(5)
-    #     return
-    #
-    # for i in threads.keys():
-    #     if threads[i].score == 5:
-    #         print(threads[i].name, "has won the game!")
-    #         send_to_all(threads[i].name + " has won the game!")
-    #         time.sleep(5)
-    #         return
-    #
-    # send_to_all('F')
+    if score == 5:
+        print(name, 'has won the game!')
+        send_to_all(name + ' has won the game!')
+        time.sleep(5)
+        return
+
+    for i in threads.keys():
+        if threads[i].score == 5:
+            print(threads[i].name, "has won the game!")
+            send_to_all(threads[i].name + " has won the game!")
+            time.sleep(5)
+            return
+
+    send_to_all('F')
     # This isn't so anybody can get caught up, except for slow humans who need to read the output.
     time.sleep(6)
 
