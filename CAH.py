@@ -424,7 +424,8 @@ def deal_c(clientsocket, name, hand=[]):
     # While less than 5 cards in hand, continue to receive cards
     while len(hand) < 5:
         card = clientsocket.recv(1024).decode('utf-8')
-        hand.append(card)
+        if card != 'F':
+            hand.append(card)
     # Print hand
     print('\n' * 100)
     print("Your hand is:")
@@ -535,7 +536,7 @@ def game_c(clientsocket, name, hand):
         time.sleep(5)
         return
 
-    time.sleep(7)
+    time.sleep(6)
     return deal_c(clientsocket, name, hand)
 
 
