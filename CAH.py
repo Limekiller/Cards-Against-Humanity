@@ -245,7 +245,6 @@ def search():
     stop = 'f'
     while stop != 'stop' and not s1.quitting:
         stop = input("Games found\n")
-    s1.quitting = True
 
 
 def find_blanks(stri):
@@ -530,11 +529,11 @@ def game_c(clientsocket, name, hand):
 
     # This prints the winner after receiving who the winner is from the server
     print(clientsocket.recv(1024).decode('utf8'))
-    #win = clientsocket.recv(1024).decode('utf8')
-    #if win != 'F':
-     #   print(win)
-      #  time.sleep(5)
-       # return
+    win = clientsocket.recv(1024).decode('utf8')
+    if win != 'F':
+        print(win)
+        time.sleep(5)
+        return
 
     time.sleep(5)
     return deal_c(clientsocket, name, hand)
@@ -670,7 +669,6 @@ def game_h(name, hand, score=0):
     send_to_all('F')
     # This isn't so anybody can get caught up, except for slow humans who need to read the output.
     time.sleep(6)
-
 
     # Reset all necessary variables in all threads for next round
     # Set next person to be the judge (but it works backwards through the list, because .keys() isn't indexable
