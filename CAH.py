@@ -655,6 +655,8 @@ def game_h(name, hand, score=0):
             print(host_card, 'has won the round!')
             send_to_all(host_card + ' has won the round!')
         host_card = False
+    
+    time.sleep(.5)
 
     if score == 5:
         print(name, 'has won the game!')
