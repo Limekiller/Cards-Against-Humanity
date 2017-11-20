@@ -535,7 +535,7 @@ def game_c(clientsocket, name, hand):
         time.sleep(5)
         return
 
-    time.sleep(5)
+    time.sleep(7)
     return deal_c(clientsocket, name, hand)
 
 
