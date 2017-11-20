@@ -529,7 +529,7 @@ def game_c(clientsocket, name, hand):
         print("Please wait for the judge to pick a card. ")
 
     # This prints the winner after receiving who the winner is from the server
-     print(clientsocket.recv(1024).decode('utf8'))
+    print(clientsocket.recv(1024).decode('utf8'))
     # win = clientsocket.recv(1024).decode('utf8')
     # print('win:', win)
     # if win != 'F':
@@ -667,7 +667,7 @@ def game_h(name, hand, score=0):
     #         send_to_all(threads[i].name + " has won the game!")
     #         time.sleep(5)
     #         return
-    # 
+    #
     # send_to_all('F')
     # This isn't so anybody can get caught up, except for slow humans who need to read the output.
     time.sleep(6)
