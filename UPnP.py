@@ -1,11 +1,12 @@
 import re
-from urllib import request
+import urllib
 import logging
-from urllib.parse import urlparse
+from urllib.request import urlparse
 from xml.dom.minidom import parseString
 from xml.parsers.expat import ExpatError
 
 import socket
+
 # Relevant UPnP spec:
 # http://www.upnp.org/specs/gw/UPnP-gw-WANIPConnection-v1-Service.pdf
 
@@ -81,7 +82,7 @@ def _retrieve_igd_profile(url):
     Retrieve the device's UPnP profile.
     """
     try:
-        return request.urlopen(url.geturl(), timeout=5).read().decode('utf-8')
+        return urllib2.urlopen(url.geturl(), timeout=5).read().decode('utf-8')
     except socket.error:
         raise IGDError('IGD profile query timed out')
 
@@ -335,16 +336,16 @@ def ask_to_close_port(port=15441, desc="UpnpPunch", retries=3, protos=("TCP", "U
 
 
 if __name__ == "__main__":
-    #import monkey
+    #from gevent import monkey
     #monkey.patch_socket()
     logging.getLogger().setLevel(logging.DEBUG)
     import time
 
     s = time.time()
     print ("Opening port...")
-    print (ask_to_open_port(15443, "ZeroNet", retries=3, protos=["TCP"]))
+    print (ask_to_open_port(16000, "ZeroNet", retries=3, protos=["TCP"]))
     print ("Done in", time.time()-s)
 
     print ("Closing port...")
-    print (ask_to_close_port(15443, "ZeroNet", retries=3, protos=["TCP"]))
+    print (ask_to_close_port(16000, "ZeroNet", retries=3, protos=["TCP"]))
     print ("Done in", time.time()-s)
