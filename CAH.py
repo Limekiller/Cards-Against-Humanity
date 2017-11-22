@@ -227,7 +227,9 @@ class LANSearchThread(threading.Thread):
                 client_socket.connect(
                     (server_name[0] + '.' + server_name[1] + '.' + str(a) + '.' + str(i), server_port))
                 client_socket.send('F'.encode('utf8'))
-                print(server_name[0] + '.' + server_name[1] + '.' + str(a) + '.' + str(i))
+                found_game = server_name[0] + '.' + server_name[1] + '.' + str(a) + '.' + str(i)
+                found_games.append(found_game)
+                print(found_games.index(found_game)+1, ':\t'+found_game)
             except:
                 try:
                     if b < 255:
@@ -235,7 +237,9 @@ class LANSearchThread(threading.Thread):
                             (server_name[0] + '.' + server_name[1] + '.' + str(b) + '.' + str(i),
                              server_port))
                         client_socket.send('F'.encode('utf8'))
-                        print(server_name[0] + '.' + server_name[1] + '.' + str(b) + '.' + str(i))
+                        found_game = server_name[0] + '.' + server_name[1] + '.' + str(b) + '.' + str(i)
+                        found_games.append(found_game)
+                        print(found_games.index(found_game)+1, ':\t' + found_game)
                 except:
                     pass
             i += 1
@@ -243,13 +247,17 @@ class LANSearchThread(threading.Thread):
 
 
 def search():
-    print("Enter 'stop' to stop searching for games.")
+    print('\n'*100)
+    print("Enter 'stop' to stop searching for games. Enter the number of a game to connect to it.")
     s1 = LANSearchThread()
     s1.start()
     stop = 'f'
-    while stop != 'stop' and not s1.quitting:
-        stop = input("Games found\n")
+    while (stop != 'stop' and stop not in [str(i) for i in range(len(found_games)+1)]) and not s1.quitting:
+        stop = input("Games found:\n")
     s1.shutdown()
+    if stop in [str(i) for i in range(len(found_games)+1)]:
+        return client(found_games[int(stop)-1])
+
 
 
 def find_blanks(stri):
@@ -730,6 +738,8 @@ randomize_cards = []
 dealt = ['-1']
 # Set up global clients dict
 threads = {}
+# Global 'found games' list
+found_games = []
 
 while True:
     # Fuck look at that sick-ass ASCII art
@@ -762,15 +772,17 @@ while True:
                                                                            -:-`
                        Bryce Yoder, Christian Gehman, Nick Walter
 """)
-    choice = input("\n\nType 'play' to start a game, 'search' to look for open games, or type an IP to connect: ")
+    choice = input("Type 'play' to start a game, 'search' to look for open games,"
+                   " 'quit' to exit, or type an IP to connect: \n")
     if choice == 'play' or choice == 'Play':  # Open a server if choosing play
         # try:
         server()
         # except:
         #   pass
-    elif choice == 'exit':  # Close program if choosing exit
-        exit()
-    elif choice == 'search':  # Look for available games if choosing search
+    elif choice == 'quit' == 'Quit':  # Close program if choosing exit
+        quit()
+    elif choice == 'search' or choice == 'Search':  # Look for available games if choosing search
+        found_games = []
         search()
     else:
         # try:  # Anything else, assume it's an IP and try to connect to it
