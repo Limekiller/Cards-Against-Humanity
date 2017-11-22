@@ -27,5 +27,3 @@ service_types = dom.getElementsByTagName('serviceType')
 for service in service_types:
     if service.childNodes[0].data.find('WANIPConnection') > 0:
         path = service.parentNode.getElementsByTagName('controlURL')[0].childNodes[0].data
-
-print(path)

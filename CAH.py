@@ -16,6 +16,7 @@ import random
 # TODO: Make output more friendly
 # TODO: Allow anyone to join at any time
 # TODO: Make it work over the INTERNET???!!?!?!?!?!?!???!?!?
+# TODO: Technically it should work over the internet if the host is able to port-forward!!
 
 # THE GAME WORKS
 # IT FUCKING WORKS
