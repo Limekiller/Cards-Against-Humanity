@@ -281,8 +281,8 @@ def server():
 
     # Set up socket and begin listening for connections
     server_port = 12000
-    server_socket = socket(AF_INET, SOCK_STREAM)
-    server_socket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+    server_socket = socket()#AF_INET, SOCK_STREAM)
+    #server_socket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
     server_socket.bind(('', server_port))
     server_socket.listen(1)
 
@@ -311,7 +311,7 @@ def client(ip):
     # If user is a client, create socket and connection to specified IP
     server_name = ip
     server_port = 12000
-    client_socket = socket(AF_INET, SOCK_STREAM)
+    client_socket = socket()#AF_INET, SOCK_STREAM)
     client_socket.connect((server_name, server_port))
     time.sleep(1)
     client_socket.send('T'.encode('utf8'))
