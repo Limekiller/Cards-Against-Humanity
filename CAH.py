@@ -226,7 +226,7 @@ class LANSearchThread(threading.Thread):
             # Works outward from subnet, alternating up and down the list.
             # This is gross and I want to change it but I haven't thought of a better idea yet.
             client_socket = socket(AF_INET, SOCK_STREAM)
-            client_socket.settimeout(0.00001)
+            client_socket.settimeout(0.000001)
             try:
                 client_socket.connect(
                     (server_name[0] + '.' + server_name[1] + '.' + str(a) + '.' + str(b), server_port))
