@@ -206,17 +206,19 @@ class LANSearchThread(threading.Thread):
 
     # Main Loop
     def run(self):
-        i = 1
         a = int(self.server_name[2])
-        b = int(self.server_name[2]) + 1
-        while not self.quitting and (a > 0 or b < 255):
+        b = 1
+        first_check = 1
+        while not self.quitting and (a < 255):
             # Wait for open socket
             # rr, rw, err = select.select([self.serversocket], [], [], 1)
             # if rr:
-            if i == 255:
-                i = 1
-                a -= 1
-                b += 1
+            if b == 255:
+                if first_check == 1:
+                    first_check = 0
+                    a = 0
+                a += 1
+                b = 1
             server_port = 12000
             server_name = gethostbyname(gethostname()).split('.')
 
@@ -227,25 +229,15 @@ class LANSearchThread(threading.Thread):
             client_socket.settimeout(0.00001)
             try:
                 client_socket.connect(
-                    (server_name[0] + '.' + server_name[1] + '.' + str(a) + '.' + str(i), server_port))
+                    (server_name[0] + '.' + server_name[1] + '.' + str(a) + '.' + str(b), server_port))
                 server_id = client_socket.recv(1024).decode('utf8')
                 client_socket.send('F'.encode('utf8'))
-                found_game = server_name[0] + '.' + server_name[1] + '.' + str(a) + '.' + str(i)
+                found_game = server_name[0] + '.' + server_name[1] + '.' + str(a) + '.' + str(b)
                 found_games.append(found_game)
                 print(found_games.index(found_game)+1, ':\t'+found_game+', '+server_id)
             except:
-                try:
-                    if b < 255:
-                        client_socket.connect(
-                            (server_name[0] + '.' + server_name[1] + '.' + str(b) + '.' + str(i),
-                             server_port))
-                        client_socket.send('F'.encode('utf8'))
-                        found_game = server_name[0] + '.' + server_name[1] + '.' + str(b) + '.' + str(i)
-                        found_games.append(found_game)
-                        print(found_games.index(found_game)+1, ':\t' + found_game)
-                except:
-                    pass
-            i += 1
+                pass
+            b += 1
         self.shutdown()
 
 
@@ -553,6 +545,7 @@ def game_c(clientsocket, name, hand):
 
     win = clientsocket.recv(1024).decode('utf8')
     if win != 'F':
+        print(win)
         time.sleep(5)
         return
 
@@ -610,7 +603,6 @@ def game_h(name, hand, score=0):
 
         for i, j in enumerate(host_sent_card):
             host_sent_card[i] = hand[j - 1]
-            # hand.remove(hand[j - 1])
             hand[j - 1] = 'trash'
         temp_hand = []
         for i in range(len(hand)):
@@ -690,7 +682,7 @@ def game_h(name, hand, score=0):
             message += threads[i].name+': '
             for j in threads[i].sent:
                 message += '\n'+j
-            message += '\n'
+            message += '\n\n'
 
     print('\n'*100)
     print(message)
