@@ -62,10 +62,11 @@ class SearchThread(threading.Thread):
     """This runs on the server when you first type 'play.' It's what allows the server to establish connections
      with others. When you type 'play' the second time, it is terminated."""
 
-    def __init__(self, serversocket):
+    def __init__(self, serversocket, server_name):
         threading.Thread.__init__(self)
         self.setDaemon(True)
         self.quitting = False
+        self.server_name = server_name
         self.serversocket = serversocket
 
     # For closing thread
@@ -84,6 +85,7 @@ class SearchThread(threading.Thread):
             if rr:
                 # Create connection
                 connection_socket, addr = self.serversocket.accept()
+                connection_socket.sendall(self.server_name.encode('utf8'))
 
                 if connection_socket.recv(1024).decode('utf8') == 'T':
                     # Store connection as thread
@@ -226,10 +228,11 @@ class LANSearchThread(threading.Thread):
             try:
                 client_socket.connect(
                     (server_name[0] + '.' + server_name[1] + '.' + str(a) + '.' + str(i), server_port))
+                server_id = client_socket.recv(1024).decode('utf8')
                 client_socket.send('F'.encode('utf8'))
                 found_game = server_name[0] + '.' + server_name[1] + '.' + str(a) + '.' + str(i)
                 found_games.append(found_game)
-                print(found_games.index(found_game)+1, ':\t'+found_game)
+                print(found_games.index(found_game)+1, ':\t'+found_game+', '+server_id)
             except:
                 try:
                     if b < 255:
@@ -278,6 +281,8 @@ def send_to_all(data):
 
 def server():
     """Sets up host connection and begins listening for clients"""
+    print('\n'*100)
+    server_name = input("Please enter a name for your server: ")
 
     # Set up socket and begin listening for connections
     server_port = 12000
@@ -293,7 +298,7 @@ def server():
     # for global internet, but it will be a lot of work.
 
     # Create server listening thread
-    t1 = SearchThread(server_socket)
+    t1 = SearchThread(server_socket, server_name)
     t1.start()
 
     # Wait for user to initiate game and shut down listening thread
