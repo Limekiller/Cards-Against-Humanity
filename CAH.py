@@ -15,8 +15,8 @@ import random
 # TODO: Improve end-of-round screen
 # TODO: Make output more friendly
 # TODO: Allow anyone to join at any time
-# TODO: Make it work over the INTERNET???!!?!?!?!?!?!???!?!?
-# TODO: Technically it should work over the internet if the host is able to port-forward!!
+# TODO: Make it work over the INTERNET???!!?!?!?!?!?!???!?!?  :(
+# TODO: Technically it should work over the internet if the host is able to port-forward!!  :)
 
 # THE GAME WORKS
 # IT FUCKING WORKS
@@ -642,7 +642,9 @@ def game_h(name, hand, score=0):
     # Create message using shuffled list and send to all clients
     # This way, you can't tell who played what based on the order the cards are printed out.
     for i, n in enumerate(randomize_cards):
-        message += str(i + 1) + '\t' + str(n)
+        message += str(i + 1) + '\t'
+        for x in n:
+            message += str(x) + '\n'
     print(message)
     send_to_all(message)
 
