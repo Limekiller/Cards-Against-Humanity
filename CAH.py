@@ -647,9 +647,10 @@ def game_h(name, hand, score=0):
     # Create message using shuffled list and send to all clients
     # This way, you can't tell who played what based on the order the cards are printed out.
     for i, n in enumerate(randomize_cards):
-        message += str(i + 1) + '\t'
+        message += str(i + 1)
         for x in n:
-            message += str(x) + '\n'
+            message += ' \t' + str(x) + '\n'
+        message += '\n'
     print(message)
     send_to_all(message)
 
