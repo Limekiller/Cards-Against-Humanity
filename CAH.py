@@ -528,7 +528,10 @@ def game_c(clientsocket, name, hand):
         print("Please wait for the judge to pick a card. ")
 
     # This prints the winner after receiving who the winner is from the server
-    print(clientsocket.recv(1024).decode('utf8'))
+    message = (clientsocket.recv(1024).decode('utf8'))
+    print('\n'*100)
+    print(message)
+
     win = clientsocket.recv(1024).decode('utf8')
     if win != 'F':
         print(win)
