@@ -679,10 +679,10 @@ def game_h(name, hand, score=0):
                 message += '\n'+j
             message += '\n\n'
 
-        print('\n'*100)
-        print(message)
-        send_to_all(message)
-        host_card = False
+    print('\n'*100)
+    print(message)
+    send_to_all(message)
+    host_card = False
 
     if score == 5:
         print(name, 'has won the game!')
