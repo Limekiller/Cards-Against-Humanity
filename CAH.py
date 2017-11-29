@@ -550,7 +550,12 @@ def game_h(name, hand, score=0):
     host_sent_card = []
     # Choose question card and send to all clients
 
-    q_card = questions[random.randrange(0, 89)]
+    while True:
+        q_card = questions[random.randrange(0, len(questions))]
+        if q_card not in dealt:
+            dealt.append(q_card)
+            break
+
     send_to_all('\n\nQuestion card is: ' + str(q_card))
     print("\nQuestion card is: " + str(q_card))
 
@@ -618,7 +623,10 @@ def game_h(name, hand, score=0):
     # Create message using shuffled list and send to all clients
     # This way, you can't tell who played what based on the order the cards are printed out.
     for i, n in enumerate(randomize_cards):
-        message += str(i + 1) + '\t' + str(n)
+        message += str(i + 1)
+        for x in n:
+            message += ' \t' + str(x) + '\n'
+        message += '\n'
     print(message)
     send_to_all(message)
 
