@@ -665,7 +665,7 @@ def game_h(name, hand, score=0):
             # send_to_all(name + ' has won the round!')
             score += 1
         else:
-            message = winner+' has won the round!\n'
+            message = host_card+' has won the round!\n'
             # print(host_card, 'has won the round!')
             # send_to_all(host_card + ' has won the round!')
         message += q_card+'\n\n'+name+':\n'
