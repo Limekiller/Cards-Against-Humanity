@@ -645,8 +645,8 @@ def game_h(name, hand, score=0):
             if threads[i].sent == randomize_cards[judge_choice - 1]:
                 winner = threads[i].name
                 threads[i].score += 1
-        print(winner + ' has won the round!')
-        send_to_all(winner + ' has won the round!')
+        message = winner + ' has won the round!\n'+q_card+'\n\n'
+        #send_to_all(winner + ' has won the round!')
     # Otherwise, wait for the judge to pick the winner
     else:
         print("Please wait for the judge to pick a card. ")
@@ -656,12 +656,28 @@ def game_h(name, hand, score=0):
             pass
         # If the card beloged to the host
         if host_card == 'Host':
-            print(name, 'has won the round!')
-            send_to_all(name + ' has won the round!')
+            message = name+' has won the round!\n'
+            # print(name, 'has won the round!')
+            # send_to_all(name + ' has won the round!')
             score += 1
         else:
-            print(host_card, 'has won the round!')
-            send_to_all(host_card + ' has won the round!')
+            message = winner+' has won the round!\n'
+            # print(host_card, 'has won the round!')
+            # send_to_all(host_card + ' has won the round!')
+        for i in host_sent_card:
+            message += i+'\n'
+
+        message += '\n'
+        for i in threads.keys():
+            if threads[i].sent:
+                message += threads[i].name+': '
+                for j in threads[i].sent:
+                    message += '\n'+j
+                message += '\n\n'
+
+        print('\n'*100)
+        print(message)
+        send_to_all(message)
         host_card = False
 
     if score == 5:
