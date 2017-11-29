@@ -550,11 +550,11 @@ def game_h(name, hand, score=0):
     host_sent_card = []
     # Choose question card and send to all clients
 
-    while True:
-        q_card = questions[random.randrange(0, len(questions))]
-        if q_card not in dealt:
-            dealt.append(q_card)
-            break
+    # while True:
+    q_card = questions[random.randrange(0, len(questions))]
+        # if q_card not in dealt:
+        #     dealt.append(q_card)
+        #     break
 
     send_to_all('\n\nQuestion card is: ' + str(q_card))
     print("\nQuestion card is: " + str(q_card))
