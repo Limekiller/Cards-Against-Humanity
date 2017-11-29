@@ -547,6 +547,7 @@ def game_h(name, hand, score=0):
 
     global q_card
     global host_card
+    winner = ''
     # Clear list of cards that have been played
     del randomize_cards[:]
     # This variable stores the card that the host plays. I'm not sure why I initialized it up here?
