@@ -677,6 +677,7 @@ def game_h(name, hand, score=0):
             time.sleep(5)
             return
 
+    time.sleep(.2)
     send_to_all('F')
     # This isn't so anybody can get caught up, except for slow humans who need to read the output.
     time.sleep(6)
