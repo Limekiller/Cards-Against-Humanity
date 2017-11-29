@@ -15,8 +15,7 @@ import random
 # TODO: Improve end-of-round screen
 # TODO: Make output more friendly
 # TODO: Allow anyone to join at any time
-# TODO: Make it work over the INTERNET???!!?!?!?!?!?!???!?!?  :(
-# TODO: Technically it should work over the internet if the host is able to port-forward!!  :)
+# TODO: Make it work over the INTERNET???!!?!?!?!?!?!???!?!?
 
 # THE GAME WORKS
 # IT FUCKING WORKS
@@ -62,11 +61,10 @@ class SearchThread(threading.Thread):
     """This runs on the server when you first type 'play.' It's what allows the server to establish connections
      with others. When you type 'play' the second time, it is terminated."""
 
-    def __init__(self, serversocket, server_name):
+    def __init__(self, serversocket):
         threading.Thread.__init__(self)
         self.setDaemon(True)
         self.quitting = False
-        self.server_name = server_name
         self.serversocket = serversocket
 
     # For closing thread
@@ -85,7 +83,6 @@ class SearchThread(threading.Thread):
             if rr:
                 # Create connection
                 connection_socket, addr = self.serversocket.accept()
-                connection_socket.sendall(self.server_name.encode('utf8'))
 
                 if connection_socket.recv(1024).decode('utf8') == 'T':
                     # Store connection as thread
@@ -206,19 +203,17 @@ class LANSearchThread(threading.Thread):
 
     # Main Loop
     def run(self):
+        i = 1
         a = int(self.server_name[2])
-        b = 1
-        first_check = 1
-        while not self.quitting and (a < 255):
+        b = int(self.server_name[2]) + 1
+        while not self.quitting and (a > 0 or b < 255):
             # Wait for open socket
             # rr, rw, err = select.select([self.serversocket], [], [], 1)
             # if rr:
-            if b == 255:
-                if first_check == 1:
-                    first_check = 0
-                    a = 0
-                a += 1
-                b = 1
+            if i == 255:
+                i = 1
+                a -= 1
+                b += 1
             server_port = 12000
             server_name = gethostbyname(gethostname()).split('.')
 
@@ -226,33 +221,34 @@ class LANSearchThread(threading.Thread):
             # Works outward from subnet, alternating up and down the list.
             # This is gross and I want to change it but I haven't thought of a better idea yet.
             client_socket = socket(AF_INET, SOCK_STREAM)
-            client_socket.settimeout(0.000001)
+            client_socket.settimeout(0.00001)
             try:
                 client_socket.connect(
-                    (server_name[0] + '.' + server_name[1] + '.' + str(a) + '.' + str(b), server_port))
-                server_id = client_socket.recv(1024).decode('utf8')
+                    (server_name[0] + '.' + server_name[1] + '.' + str(a) + '.' + str(i), server_port))
                 client_socket.send('F'.encode('utf8'))
-                found_game = server_name[0] + '.' + server_name[1] + '.' + str(a) + '.' + str(b)
-                found_games.append(found_game)
-                print(found_games.index(found_game)+1, ':\t'+found_game+', '+server_id)
+                print(server_name[0] + '.' + server_name[1] + '.' + str(a) + '.' + str(i))
             except:
-                pass
-            b += 1
+                try:
+                    if b < 255:
+                        client_socket.connect(
+                            (server_name[0] + '.' + server_name[1] + '.' + str(b) + '.' + str(i),
+                             server_port))
+                        client_socket.send('F'.encode('utf8'))
+                        print(server_name[0] + '.' + server_name[1] + '.' + str(b) + '.' + str(i))
+                except:
+                    pass
+            i += 1
         self.shutdown()
 
 
 def search():
-    print('\n'*100)
-    print("Enter 'stop' to stop searching for games. Enter the number of a game to connect to it.")
+    print("Enter 'stop' to stop searching for games.")
     s1 = LANSearchThread()
     s1.start()
     stop = 'f'
-    while (stop != 'stop' and stop not in [str(i) for i in range(len(found_games)+1)]) and not s1.quitting:
-        stop = input("Games found:\n")
+    while stop != 'stop' and not s1.quitting:
+        stop = input("Games found\n")
     s1.shutdown()
-    if stop in [str(i) for i in range(len(found_games)+1)]:
-        return client(found_games[int(stop)-1])
-
 
 
 def find_blanks(stri):
@@ -273,8 +269,6 @@ def send_to_all(data):
 
 def server():
     """Sets up host connection and begins listening for clients"""
-    print('\n'*100)
-    server_name = input("Please enter a name for your server: ")
 
     # Set up socket and begin listening for connections
     server_port = 12000
@@ -290,7 +284,7 @@ def server():
     # for global internet, but it will be a lot of work.
 
     # Create server listening thread
-    t1 = SearchThread(server_socket, server_name)
+    t1 = SearchThread(server_socket)
     t1.start()
 
     # Wait for user to initiate game and shut down listening thread
@@ -540,12 +534,11 @@ def game_c(clientsocket, name, hand):
 
     # This prints the winner after receiving who the winner is from the server
     message = clientsocket.recv(1024).decode('utf8')
-    print('\n'*100)
+    print('\n' * 100)
     print(message)
 
     win = clientsocket.recv(1024).decode('utf8')
     if win != 'F':
-        print(win)
         time.sleep(5)
         return
 
@@ -603,6 +596,7 @@ def game_h(name, hand, score=0):
 
         for i, j in enumerate(host_sent_card):
             host_sent_card[i] = hand[j - 1]
+            # hand.remove(hand[j - 1])
             hand[j - 1] = 'trash'
         temp_hand = []
         for i in range(len(hand)):
@@ -639,10 +633,7 @@ def game_h(name, hand, score=0):
     # Create message using shuffled list and send to all clients
     # This way, you can't tell who played what based on the order the cards are printed out.
     for i, n in enumerate(randomize_cards):
-        message += str(i + 1)
-        for x in n:
-            message += ' \t' + str(x) + '\n'
-        message += '\n'
+        message += str(i + 1) + '\t' + str(n)
     print(message)
     send_to_all(message)
 
@@ -658,7 +649,7 @@ def game_h(name, hand, score=0):
             if threads[i].sent == randomize_cards[judge_choice - 1]:
                 winner = threads[i].name
                 threads[i].score += 1
-        message = winner + ' has won the round!\n'+q_card+'\n\n'
+        message = winner + ' has won the round!\n' + q_card + '\n\n'
     # Otherwise, wait for the judge to pick the winner
     else:
         print("Please wait for the judge to pick a card. ")
@@ -668,23 +659,23 @@ def game_h(name, hand, score=0):
             pass
         # If the card belonged to the host
         if host_card == 'Host':
-            message = name+' has won the round!\n'
+            message = name + ' has won the round!\n'
             score += 1
         else:
-            message = winner+' has won the round!\n'
-        message += q_card+'\n\n'+name+':\n'
+            message = winner + ' has won the round!\n'
+        message += q_card + '\n\n' + name + ':\n'
         for i in host_sent_card:
-            message += i+'\n'
+            message += i + '\n'
 
     message += '\n'
     for i in threads.keys():
         if threads[i].sent:
-            message += threads[i].name+': '
+            message += threads[i].name + ': '
             for j in threads[i].sent:
-                message += '\n'+j
-            message += '\n\n'
+                message += '\n' + j
+            message += '\n'
 
-    print('\n'*100)
+    print('\n' * 100)
     print(message)
     send_to_all(message)
     host_card = False
@@ -738,8 +729,6 @@ randomize_cards = []
 dealt = ['-1']
 # Set up global clients dict
 threads = {}
-# Global 'found games' list
-found_games = []
 
 while True:
     # Fuck look at that sick-ass ASCII art
@@ -753,7 +742,7 @@ while True:
            dMd`   `yh+`sdyssNM+ NM+   sMd...+MN -oyhhmh:                                            
            .dMdo/+hMd-/MN/:/NM+ NM/   -NMo//dMN yd+-:dMs                                            
             `:oyhys/` `/yys++s/ os-    .oyys/ss .+ssss/`                                            
-                                                                                                    
+
               /hhs                       hh:                   .//                                  
              .NMNM/    `---`..`  .---.`  ++. ..`.--.   .---.` .+MN.`                                
             `dMy+MN-  :dNdhyNN:`ymhsyNd. NN/ NNhyhNN+ omdsymh.odMMy/                                
@@ -772,17 +761,15 @@ while True:
                                                                            -:-`
                        Bryce Yoder, Christian Gehman, Nick Walter
 """)
-    choice = input("Type 'play' to start a game, 'search' to look for open games,"
-                   " 'quit' to exit, or type an IP to connect: \n")
+    choice = input("\n\nType 'play' to start a game, 'search' to look for open games, or type an IP to connect: ")
     if choice == 'play' or choice == 'Play':  # Open a server if choosing play
         # try:
         server()
         # except:
         #   pass
-    elif choice == 'quit' == 'Quit':  # Close program if choosing exit
-        quit()
-    elif choice == 'search' or choice == 'Search':  # Look for available games if choosing search
-        found_games = []
+    elif choice == 'exit':  # Close program if choosing exit
+        exit()
+    elif choice == 'search':  # Look for available games if choosing search
         search()
     else:
         # try:  # Anything else, assume it's an IP and try to connect to it
