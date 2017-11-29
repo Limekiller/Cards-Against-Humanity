@@ -596,18 +596,10 @@ def game_h(name, hand, score=0):
 
     # Wait for all responses to come in
     #print('number to get', (len(threads) * find_blanks(q_card)) - 1)
-    if not host_sent_card:
-        while sent <= (len(threads) * find_blanks(q_card)) - 1:
-            sent = 0
-            for i in threads.keys():
-                if threads[i].sent:
-                    sent += len(threads[i].sent)
-    else:
-        while sent <= (len(threads) * find_blanks(q_card)) - 1:
-            sent = 1
-            for i in threads.keys():
-                if threads[i].sent:
-                    sent += len(threads[i].sent)
+    while sent <= (len(threads) * find_blanks(q_card)) - 1:
+        for i in threads.keys():
+            if threads[i].sent:
+                sent += len(threads[i].sent)
 
     time.sleep(.2)
     send_to_all('T')
