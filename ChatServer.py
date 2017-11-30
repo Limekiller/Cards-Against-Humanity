@@ -55,10 +55,10 @@ class ServerThread(threading.Thread):
                 data = self.consock.recv(1024).decode('utf-8')  # Continually receive data
                 if sender[0] != self.name:  # If different sender than previous message, save new sender
                     sender[0] = self.name   # and generate, send dividing bar to all clients
-                    bar = '\n-----------------------------------------------------------------------'
-                    #bar = '\n'+self.name+' '               # This code allows the sender's name to be prepended to the
-                    #for i in range(70 - len(self.name)):   # dividing bar as a sort of 'section header'
-                    #    bar += '-'                         # Kind of annoying (esp. with tts) so I turned it off
+                    #bar = '\n-----------------------------------------------------------------------'
+                    bar = '\n'+self.name+' '               # This code allows the sender's name to be prepended to the
+                    for i in range(70 - len(self.name)):   # dividing bar as a sort of 'section header'
+                        bar += '-'                         # Kind of annoying (esp. with tts) so I turned it off
                     cdata(bar)
                     print(bar)  # Add bar to saved message data, print and send to all clients
                     send_to_all(bar, '')
@@ -71,7 +71,7 @@ class ServerThread(threading.Thread):
             if self.name == 'None':  # Set nickname
                 self.name = data
             else:
-                data = str(self.name+": "+data)  # Take incoming data, prepend sender's name, and send to all clients
+                #data = str(self.name+": "+data)  # Take incoming data, prepend sender's name, and send to all clients
                 cdata(data)  # Also add to saved message data
                 print(data)
                 send_to_all(data, '')
@@ -111,17 +111,25 @@ def server(name):  # Main server thread
     print("Connected to chat! Your name: "+name)
 
     while True:
-        data = input()
+        while True:
+            data = input()
+            if data != '':
+                break
+            else:
+                print('\n'*100)
+                for i in chatdata:  # Print all saved chat data
+                    print(i)
         print('\n'*100)  # After input, send dividing bar and add to message data
-        if sender[0] != name:
+        if sender[0] != name and data != 'tts_on' and data != 'tts_all':
             sender[0] = name
-            bar = '\n-----------------------------------------------------------------------'
-            #bar = '\n'+name+" "
-            #for i in range(70 - len(name)):
-            #    bar += '-'
+            #bar = '\n-----------------------------------------------------------------------'
+            bar = '\n'+name+" "
+            for i in range(70 - len(name)):
+                bar += '-'
             cdata(bar)
             send_to_all(bar, '')
-        cdata(name+': '+data)  # Prepend name to message
+        cdata(data)  # Prepend name to message
+        #send_to_all(data, bar)
 
         for i in chatdata:  # Print all saved chat data
             print(i)
@@ -136,7 +144,7 @@ def server(name):  # Main server thread
                 threads[i].send(data.encode('utf-8'))
         else:
             for i in threads.keys():
-                threads[i].send(str(name+": "+data).encode('utf-8'))
+                threads[i].send(data.encode('utf-8'))
 
 chatdata = []
 sender = ['None']  # Create chat data list, sender item, and threads dict
