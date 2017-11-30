@@ -222,7 +222,7 @@ class LANSearchThread(threading.Thread):
             client_socket = socket(AF_INET, SOCK_STREAM)
             client_socket.settimeout(0.000001)
             try:
-                print(server_name[0] + '.' + server_name[1] + '.' + str(a) + '.' + str(b))
+                #print(server_name[0] + '.' + server_name[1] + '.' + str(a) + '.' + str(b))
                 client_socket.connect(
                     (server_name[0] + '.' + server_name[1] + '.' + str(a) + '.' + str(b), server_port))
                 server_id = client_socket.recv(1024).decode('utf8')
