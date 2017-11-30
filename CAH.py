@@ -191,7 +191,6 @@ class LANSearchThread(threading.Thread):
         self.setDaemon(True)
         self.quitting = False
         self.server_port = 12000
-        self.server_name = gethostbyname(gethostname()).split('.')
 
     def shutdown(self):
         if self.quitting:
@@ -204,13 +203,14 @@ class LANSearchThread(threading.Thread):
 
     # Main Loop
     def run(self):
-        a = int(self.server_name[2])
+        s = socket(AF_INET, SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        server_name = (s.getsockname()[0]).split('.')
+        s.close()
+        a = int(server_name[2])
         b = 1
         first_check = 1
         while not self.quitting and (a < 255):
-            # Wait for open socket
-            # rr, rw, err = select.select([self.serversocket], [], [], 1)
-            # if rr:
             if b == 255:
                 if first_check == 1:
                     first_check = 0
@@ -218,14 +218,11 @@ class LANSearchThread(threading.Thread):
                 a += 1
                 b = 1
             server_port = 12000
-            server_name = gethostbyname(gethostname()).split('.')
 
-            # Starts at current subnet, and attempts to make a connection on port 12000 for every IP address.
-            # Works outward from subnet, alternating up and down the list.
-            # This is gross and I want to change it but I haven't thought of a better idea yet.
             client_socket = socket(AF_INET, SOCK_STREAM)
             client_socket.settimeout(0.000001)
             try:
+                print(server_name[0] + '.' + server_name[1] + '.' + str(a) + '.' + str(b))
                 client_socket.connect(
                     (server_name[0] + '.' + server_name[1] + '.' + str(a) + '.' + str(b), server_port))
                 server_id = client_socket.recv(1024).decode('utf8')
@@ -269,6 +266,10 @@ def send_to_all(data):
 
 
 def server():
+    s = socket(AF_INET, SOCK_DGRAM)
+    s.connect(("8.8.8.8", 80))
+    IP = (s.getsockname()[0])
+    s.close()
     """Sets up host connection and begins listening for clients"""
     print('\n'*100)
     server_name = input("Please enter a name for your server: ")
@@ -281,7 +282,7 @@ def server():
     server_socket.listen(1)
 
     print("Searching for connections...")
-    print("Your IP is " + gethostbyname(gethostname()))  # Get LAN IP address
+    print("Your IP is " + IP)  # Get LAN IP address
     # print("Your IP is "+urllib.request.urlopen('http://ident.me').read().decode('utf8'))
     # ^ This gets public internet IP, but it doesn't work because of NAT addressing. May be able to use a UPnP library
     # for global internet, but it will be a lot of work.
