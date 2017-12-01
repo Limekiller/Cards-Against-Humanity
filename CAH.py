@@ -147,7 +147,7 @@ class ServerThread(threading.Thread):
                         # Otherwise things get messed up yo
                         for i in threads.keys():
                             if threads[i].sent:
-                                threads[i].sendall((self.name + ' has played their card!').encode('utf8'))
+                                threads[i].send((self.name + ' has played their card!').encode('utf8'))
                     else:
                         self.consock.sendall('M'.encode('utf8'))
                 # Only accept cards in the hand
@@ -263,7 +263,7 @@ def find_blanks(stri):
 def send_to_all(data):
     """Easily-callable function for sending data to everyone"""
     for i in threads.keys():
-        threads[i].sendall(data.encode('utf-8'))
+        threads[i].send(data.encode('utf-8'))
 
 
 def server():
@@ -462,7 +462,7 @@ def deal_h(name, hand=[], score=0):
             if card not in dealt:
                 dealt.append(card)
                 threads[i].hand.append(card)
-                threads[i].sendall(card.encode('utf-8'))
+                threads[i].send(card.encode('utf-8'))
                 # Wait for client to catch up
                 # Without this line, the first card received may occasionally be like 200 digits long
                 time.sleep(.2)
@@ -594,7 +594,7 @@ def game_h(name, hand, score=0):
         # We've seen this before -- tell all users that have already played their card that the host has played theirs.
         for i in threads.keys():
             if threads[i].sent:
-                threads[i].sendall((name + ' has played their card!').encode('utf8'))
+                threads[i].send((name + ' has played their card!').encode('utf8'))
         sent = len(host_sent_card)
 
         for i, j in enumerate(host_sent_card):
