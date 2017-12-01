@@ -147,7 +147,7 @@ class ServerThread(threading.Thread):
                         # Otherwise things get messed up yo
                         for i in threads.keys():
                             if threads[i].sent:
-                                threads[i].send((self.name + ' has played their card!').encode('utf8'))
+                                threads[i].sendall((self.name + ' has played their card!').encode('utf8'))
                     else:
                         self.consock.sendall('M'.encode('utf8'))
                 # Only accept cards in the hand
@@ -227,7 +227,7 @@ class LANSearchThread(threading.Thread):
                 client_socket.connect(
                     (server_name[0] + '.' + server_name[1] + '.' + str(a) + '.' + str(b), server_port))
                 server_id = client_socket.recv(1024).decode('utf8')
-                client_socket.send('F'.encode('utf8'))
+                client_socket.sendall('F'.encode('utf8'))
                 found_game = server_name[0] + '.' + server_name[1] + '.' + str(a) + '.' + str(b)
                 found_games.append(found_game)
                 print(found_games.index(found_game)+1, ':\t'+found_game+', '+server_id)
@@ -263,7 +263,7 @@ def find_blanks(stri):
 def send_to_all(data):
     """Easily-callable function for sending data to everyone"""
     for i in threads.keys():
-        threads[i].send(data.encode('utf-8'))
+        threads[i].sendall(data.encode('utf-8'))
 
 
 def server():
@@ -310,7 +310,7 @@ def client(ip):
     client_socket = socket(AF_INET, SOCK_STREAM)
     client_socket.connect((server_name, server_port))
     time.sleep(1)
-    client_socket.send('T'.encode('utf8'))
+    client_socket.sendall('T'.encode('utf8'))
 
     # Wait for host to initiate game
     cont = "F".encode('UTF-8')
@@ -392,7 +392,7 @@ def play_c(clientsocket, ip):
     # Send nickname to host
     while name == 'None':
         name = input("Please enter your nickname: ")
-        clientsocket.send(name.encode('utf-8'))
+        clientsocket.sendall(name.encode('utf-8'))
 
     print("Connected!")
     print("Waiting for players...")
@@ -462,7 +462,7 @@ def deal_h(name, hand=[], score=0):
             if card not in dealt:
                 dealt.append(card)
                 threads[i].hand.append(card)
-                threads[i].send(card.encode('utf-8'))
+                threads[i].sendall(card.encode('utf-8'))
                 # Wait for client to catch up
                 # Without this line, the first card received may occasionally be like 200 digits long
                 time.sleep(.2)
@@ -499,7 +499,7 @@ def game_c(clientsocket, name, hand):
         while valid != 'T':
             try:
                 cchoice = int(input("Which card? ")) - 1
-                clientsocket.send((str(cchoice) + 'card').encode('utf8'))
+                clientsocket.sendall((str(cchoice) + 'card').encode('utf8'))
                 valid = clientsocket.recv(1024).decode('utf8')
                 if valid == 'M':
                     # hand.remove(hand[int(cchoice)])
@@ -594,7 +594,7 @@ def game_h(name, hand, score=0):
         # We've seen this before -- tell all users that have already played their card that the host has played theirs.
         for i in threads.keys():
             if threads[i].sent:
-                threads[i].send((name + ' has played their card!').encode('utf8'))
+                threads[i].sendall((name + ' has played their card!').encode('utf8'))
         sent = len(host_sent_card)
 
         for i, j in enumerate(host_sent_card):
