@@ -216,7 +216,7 @@ class LANSearchThread(threading.Thread):
                     first_check = 0
                     a = 0
                 a += 1
-                print(a)
+                #print(a)
                 b = 1
             server_port = 12000
 
