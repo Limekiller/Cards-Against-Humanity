@@ -623,6 +623,7 @@ def game_h(name, hand, score=0):
                 if threads[i].sent:
                     sent += len(threads[i].sent)
 
+    time.sleep(.2)
     send_to_all('T')
     time.sleep(.2)
 
