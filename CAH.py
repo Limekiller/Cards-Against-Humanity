@@ -623,8 +623,8 @@ def game_h(name, hand, score=0):
                 if threads[i].sent:
                     sent += len(threads[i].sent)
 
-    #time.sleep(.2)
     send_to_all('T')
+    time.sleep(.2)
 
     # Construct message containing all the cards played and sent it to all clients
     message = '\nCards played:\n'
