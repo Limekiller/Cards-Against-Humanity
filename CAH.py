@@ -311,6 +311,7 @@ def client(ip):
     client_socket.connect((server_name, server_port))
     time.sleep(1)
     client_socket.sendall('T'.encode('utf8'))
+    time.sleep(.5)
 
     # Wait for host to initiate game
     cont = "F".encode('UTF-8')
@@ -485,6 +486,7 @@ def game_c(clientsocket, name, hand):
     """The actual game function. Switches between this and dealing for the rest of the game."""
 
     print(clientsocket.recv(1024).decode('utf8'))
+    time.sleep(.5)
     # Find who is the judge
     judge = clientsocket.recv(1024).decode('utf8')
     print(judge + ' is the judge!\n')
