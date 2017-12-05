@@ -311,7 +311,7 @@ def client(ip):
     client_socket.connect((server_name, server_port))
     time.sleep(1)
     client_socket.sendall('T'.encode('utf8'))
-    time.sleep(.5)
+    #time.sleep(.5)
 
     # Wait for host to initiate game
     cont = "F".encode('UTF-8')
@@ -381,7 +381,7 @@ def play_h(active_threads):
     else:
         print("Connection to chat failed.")
     # Wait for a second for clients to catch up
-    time.sleep(1)
+    #time.sleep(1)
     return deal_h(name)
 
 
@@ -486,7 +486,7 @@ def game_c(clientsocket, name, hand):
     """The actual game function. Switches between this and dealing for the rest of the game."""
 
     print(clientsocket.recv(1024).decode('utf8'))
-    time.sleep(.5)
+    #time.sleep(.5)
     # Find who is the judge
     judge = clientsocket.recv(1024).decode('utf8')
     print(judge + ' is the judge!\n')
@@ -546,10 +546,10 @@ def game_c(clientsocket, name, hand):
     win = clientsocket.recv(1024).decode('utf8')
     if win != 'F':
         print(win)
-        time.sleep(5)
+        time.sleep(10)
         return
 
-    time.sleep(5)
+    time.sleep(10)
     return deal_c(clientsocket, name, hand)
 
 
@@ -624,7 +624,7 @@ def game_h(name, hand, score=0):
                 if threads[i].sent:
                     sent += len(threads[i].sent)
 
-    time.sleep(.2)
+    #time.sleep(.2)
     send_to_all('T')
 
     # Construct message containing all the cards played and sent it to all clients
@@ -699,20 +699,20 @@ def game_h(name, hand, score=0):
     if score == 5:
         print(name, 'has won the game!')
         send_to_all(name + ' has won the game!')
-        time.sleep(5)
+        time.sleep(10)
         return
 
     for i in threads.keys():
         if threads[i].score == 5:
             print(threads[i].name, "has won the game!")
             send_to_all(threads[i].name + " has won the game!")
-            time.sleep(5)
+            time.sleep(10)
             return
 
-    time.sleep(.2)
+    #time.sleep(.2)
     send_to_all('F')
     # This isn't so anybody can get caught up, except for slow humans who need to read the output.
-    time.sleep(6)
+    time.sleep(10)
 
     # Reset all necessary variables in all threads for next round
     # Set next person to be the judge (but it works backwards through the list, because .keys() isn't indexable
