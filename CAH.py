@@ -311,7 +311,6 @@ def client(ip):
     client_socket.connect((server_name, server_port))
     time.sleep(1)
     client_socket.sendall('T'.encode('utf8'))
-    #time.sleep(.5)
 
     # Wait for host to initiate game
     cont = "F".encode('UTF-8')
@@ -355,7 +354,7 @@ def play_h(active_threads):
     names = names[:0:-1]
     # It removes the final comma and adds an and between the last two names
     #########
-
+    time.sleep(.5)
     print('\n' * 100)
     print(names + '\n')
     send_to_all("T")
@@ -391,7 +390,7 @@ def play_c(clientsocket, ip):
     print('\n' * 100)
     name = 'None'
     # Send nickname to host
-    while name == 'None':
+    while name == 'None' or ' ' in name:
         name = input("Please enter your nickname: ")
         clientsocket.sendall(name.encode('utf-8'))
 
