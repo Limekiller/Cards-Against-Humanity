@@ -669,6 +669,7 @@ def game_h(name, hand, score=0):
         # variable gets set to true.
         while not host_card:
             pass
+        time.sleep(.5)
         # If the card beloged to the host
         if host_card == 'Host':
             message = name+' has won the round!\n'
