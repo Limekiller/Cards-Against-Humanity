@@ -572,6 +572,7 @@ def game_h(name, hand, score=0):
     send_to_all('\n\nQuestion card is: ' + str(q_card))
     print("\nQuestion card is: " + str(q_card))
 
+    time.sleep(.5)
     # Find out who is judge and send to all clients. If nobody is judge, assume host is judge.
     judge = name
     for i in threads.keys():
