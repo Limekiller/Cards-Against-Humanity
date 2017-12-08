@@ -750,7 +750,10 @@ found_games = []
 
 while True:
     for i in threads.keys():
-        threads[i].shutdown();
+        try:
+            threads[i].shutdown()
+        except:
+            pass
     # look at that sick-ass ASCII art
     # (Sick-AS-CII art)
     print('\n' * 100)
@@ -788,13 +791,13 @@ while True:
             server()
         except:
             pass
-    elif choice == 'quit' == 'Quit':  # Close program if choosing exit
-        quit()
+    elif choice == 'quit' or choice == 'Quit':  # Close program if choosing exit
+        break
     elif choice == 'search' or choice == 'Search':  # Look for available games if choosing search
         found_games = []
         search()
     else:
         try:  # Anything else, assume it's an IP and try to connect to it
             client(choice)
-        except:  # If co
+        except:
             pass
