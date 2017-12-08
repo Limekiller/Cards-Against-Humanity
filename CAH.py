@@ -17,7 +17,6 @@ import random
 # TODO: Technically it should work over the internet if the host is able to port-forward!!  :)
 
 # THE GAME WORKS
-# IT FUCKING WORKS
 # Notes:
 # If you have ANY questions about how something works, ask me and I'll add it here.
 #
@@ -749,7 +748,9 @@ threads = {}
 found_games = []
 
 while True:
-    # Fuck look at that sick-ass ASCII art
+    for i in threads.keys():
+        threads[i].shutdown();
+    # look at that sick-ass ASCII art
     # (Sick-AS-CII art)
     print('\n' * 100)
     print("""                                                                                          
@@ -782,17 +783,17 @@ while True:
     choice = input("Type 'play' to start a game, 'search' to look for open games,"
                    " 'quit' to exit, or type an IP to connect: \n")
     if choice == 'play' or choice == 'Play':  # Open a server if choosing play
-        # try:
-        server()
-        # except:
-        #   pass
+        try:
+            server()
+        except:
+            pass
     elif choice == 'quit' == 'Quit':  # Close program if choosing exit
         quit()
     elif choice == 'search' or choice == 'Search':  # Look for available games if choosing search
         found_games = []
         search()
     else:
-        # try:  # Anything else, assume it's an IP and try to connect to it
-        client(choice)
-        # except:  # If co
-        #   pass
+        try:  # Anything else, assume it's an IP and try to connect to it
+            client(choice)
+        except:  # If co
+            pass
